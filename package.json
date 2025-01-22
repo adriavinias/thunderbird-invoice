@@ -1,0 +1,17 @@
+{
+  "name": "thunderbird-invoice",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon index.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "fs": "^0.0.1-security",
+    "imapflow": "^1.0.177",
+    "nodemon": "^3.1.9"
+  }
+}
