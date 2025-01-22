@@ -1,5 +1,12 @@
+require('dotenv').config()
+
 const {ImapFlow} = require('imapflow');
 const {fs} = require('fs');
+const { simpleParser } = require('mailparser');
+const { parse } = require('path');
+
+
+
 
 
 async function main() {
@@ -9,31 +16,57 @@ async function main() {
       secure: true, // Usa TLS
       auth: {
         user: 'contact@discosparadiso.com',
-        pass: '',
+        pass: process.env.THUNDERBIRD_CONTACT_PASSWORD,
       },
+      logger: {
+        debug: () => {}, // Silencia logs de nivel "debug"
+        info: console.log, // Mantiene logs de nivel "info"
+        warn: console.warn,
+        error: console.error
+    }
     });
   
     try {
+
+      const range = "1:*"; // Busca en todos los mensajes
+      const query = {
+          source: true,
+          envelope: true, // Obtén datos del sobre (asunto, remitente, etc.)
+          bodyStructure: true,
+      };
       // Conectar al servidor
       await client.connect();
       console.log('Conectado al servidor IMAP');
   
       // Abrir la bandeja de entrada
-      const mailbox = await client.getMailboxLock('INBOX');
-      console.log(`Bandeja seleccionada: ${mailbox.path}`);
+      await client.mailboxOpen('INBOX');
   
       // Buscar correos con el término "invoice"
-      for await (let message of client.fetch({ text: 'invoice' }, { envelope: true, source: true })) {
-        console.log(`Asunto: ${message.envelope.subject}`);
-        console.log(`De: ${message.envelope.from[0].address}`);
-  
-        // Procesar archivos adjuntos si existen
-        if (message.source.includes('Content-Type: application/pdf')) {
-            console.log(message.source)
-          //fs.writeFileSync(`./${message.envelope.messageId}.pdf`, message.source);
-          console.log('Archivo PDF guardado.');
-        }
+      const messages = await client.fetch(range, query, {uid: true})
+      for await (const message of messages) { 
+        if (!message.source) {
+          console.error(`El mensaje con ID ${message.id} no tiene contenido (source).`);
+          continue;
       }
+        const parsed = await simpleParser(message.source);  
+        if(/invoice|factura/i.test(parsed.subject) && parsed.attachments){
+          for(const attachment of parsed.attachments) {
+            console.log(attachment.filename)
+          }
+        }
+        
+        /*
+        if(parsed.attachments){
+          for (const attachment of parsed.attachments){
+            if(/invoice|factura/i.test(attachment.filename) && attachment.filename.endsWith('.pdf')){
+              console.log(`${attachment.filename}.pdf`)
+            } else {
+              console.log(attachment.filename)
+            }
+          }
+        }*/
+      }
+      
     } finally {
       await client.close();
       console.log('Desconectado del servidor IMAP');

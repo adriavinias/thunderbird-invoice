@@ -10,8 +10,11 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "dotenv": "^16.4.7",
     "fs": "^0.0.1-security",
     "imapflow": "^1.0.177",
-    "nodemon": "^3.1.9"
+    "mailparser": "^3.7.2",
+    "nodemon": "^3.1.9",
+    "openid-client": "^6.1.7"
   }
 }
