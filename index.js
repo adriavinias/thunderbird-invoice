@@ -4,19 +4,35 @@ const {ImapFlow} = require('imapflow');
 const {fs} = require('fs');
 const { simpleParser } = require('mailparser');
 const { parse } = require('path');
+const { generateAuthUrl, getAccessToken, loadToken, promptAuthorization } = require('./auth/gmailAuth');
 
+async function authorize() {
+  console.log('Autoriza la aplicación accediendo a esta URL:');
+  console.log(generateAuthUrl());
+
+  // Pega aquí el código de autorización después de abrir la URL
+  const code = 'CÓDIGO_AUTORIZACIÓN'; // Reemplaza con el código obtenido
+  const tokens = await getAccessToken(code);
+  console.log('Tokens obtenidos:', tokens);
+}
 
 
 
 
 async function main() {
+
+
+  const tokens = loadToken();
+
+
     const client = new ImapFlow({
       host: 'imap.discosparadiso.com',
       port: 993,
       secure: true, // Usa TLS
       auth: {
-        user: 'contact@discosparadiso.com',
+        user: 'discosparadiso@gmail.com',
         pass: process.env.THUNDERBIRD_CONTACT_PASSWORD,
+        accessToken: tokens.access_token, 
       },
       logger: {
         debug: () => {}, // Silencia logs de nivel "debug"
@@ -73,4 +89,6 @@ async function main() {
     }
   }
   
-  main().catch(console.error);
+  promptAuthorization();
+  authorize(); // Ejecutar para obtener el token de acceso la primera vez
+  //main().catch(console.error);

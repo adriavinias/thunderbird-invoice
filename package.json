@@ -12,6 +12,7 @@
   "dependencies": {
     "dotenv": "^16.4.7",
     "fs": "^0.0.1-security",
+    "google-auth-library": "^9.15.0",
     "imapflow": "^1.0.177",
     "mailparser": "^3.7.2",
     "nodemon": "^3.1.9",
